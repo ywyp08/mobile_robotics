@@ -22,6 +22,23 @@ TURN_BASE = 10
 def sees_green():
     return color_sensor.color() == Color.GREEN
 
+def sees_grey():
+    r, g, b = color_sensor.rgb()
+    ev3.screen.clear()
+    ev3.screen.print("R:", r, "G:", g, "B:", b)
+
+    R = 7 < r < 12
+    G = 10 < g < 18
+    B = 18 < b < 26
+    green = sees_green()
+
+    reflection = color_sensor.reflection()
+    ev3.screen.clear()
+    ev3.screen.print("Ref:", reflection)
+    ev3.screen.print("R:", r, "G:", g, "B:", b)
+
+    return R and G and B and not green
+
 def look_around(turn_angle):
     robot.turn(turn_angle)
     wait(WAIT_TIME)
@@ -35,11 +52,18 @@ def look_around(turn_angle):
     robot.turn(turn_angle)
 
 # Start
-ev3.speaker.beep()
-
-while True:
+grey_patch = 0
+run = True
+while run:
     if sees_green():
         robot.drive(FORWARD_SPEED, 0)
+    elif sees_grey():
+        ev3.speaker.beep()
+        if grey_patch == 0:
+            robot.turn(360)
+            grey_patch += 1
+        else:
+            run = False
     else:
         robot.stop()
         wait(WAIT_TIME)
