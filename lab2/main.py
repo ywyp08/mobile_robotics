@@ -17,6 +17,7 @@ robot = DriveBase(left_motor, right_motor, wheel_diameter=55.5, axle_track=104)
 FORWARD_SPEED = 100
 WAIT_TIME = 100
 TURN_BASE = 10
+GREY_CHECK = False
 
 # Functions
 def sees_green():
@@ -51,7 +52,7 @@ run = True
 while run:
     if sees_green():
         robot.drive(FORWARD_SPEED, 0)
-    elif sees_grey():
+    elif GREY_CHECK and sees_grey():
         ev3.speaker.beep()
         if grey_patch == 0:
             robot.turn(360)
