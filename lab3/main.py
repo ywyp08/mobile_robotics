@@ -7,32 +7,26 @@ from pybricks.robotics import DriveBase
 from pybricks.tools import wait, StopWatch, DataLog
 import math
 
-# --- Setup ---
+# Setup
 ev3 = EV3Brick()
 left_motor = Motor(Port.B)
 right_motor = Motor(Port.C)
 color_sensor = ColorSensor(Port.S3)
 robot = DriveBase(left_motor, right_motor, wheel_diameter=55.5, axle_track=104)
 watch = StopWatch()
+data = DataLog('time_ms', 'x_mm', 'y_mm', 'heading_deg', name='path_log', timestamp=False, extension='csv')
 
-# --- Settings ---
-FORWARD_SPEED = 100       # mm/s
-WAIT_TIME = 100           # ms
-TURN_BASE = 10            # deg
+# Settings
+FORWARD_SPEED = 100
+WAIT_TIME = 100
+TURN_BASE = 10
 GREY_CHECK = False
 
-# --- Data logger ---
-# timestamp=False -> readable, constant filename; True -> adds timestamp
-data = DataLog('time_ms', 'x_mm', 'y_mm', 'heading_deg', 'r', 'g', 'b', 'reflection', 'color',
-               name='path_log', timestamp=False, extension='csv')
-
-# --- Variables ---
+# Variables
 x, y, heading = 0.0, 0.0, 0.0
 last_distance = 0.0
-grey_patch = 0
-run = True
 
-# --- Helper functions ---
+# Functions
 def sees_green():
     return color_sensor.color() == Color.GREEN
 
@@ -55,12 +49,12 @@ def look_around(turn_angle):
         return
     robot.turn(turn_angle)
 
-# --- Start ---
+# Start
 robot.reset()
 watch.reset()
-
+grey_patch = 0
+run = True
 while run:
-    # --- Odometry update ---
     distance = robot.distance()
     delta_d = distance - last_distance
     last_distance = distance
@@ -70,11 +64,8 @@ while run:
     x += delta_d * math.cos(rad)
     y += delta_d * math.sin(rad)
 
-    # --- Log to CSV ---
-    t = watch.time()
-    data.log(t, x, y, heading)
+    data.log(watch.time(), x, y, heading)
 
-    # --- Behavior logic ---
     if sees_green():
         robot.drive(FORWARD_SPEED, 0)
     elif GREY_CHECK and sees_grey():
