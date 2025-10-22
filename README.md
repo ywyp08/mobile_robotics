@@ -19,3 +19,12 @@ This repository contains a series of exercises for the **Mobile Robotics** cours
 - Navigate the robot along a track while recording movement data.
 - Save the data locally on the EV3 brick.
 - Transfer the data to a computer and generate a digital visualization of the track.
+
+### Lab 4: Assembling PiCar-X
+- Assemble the PiCar-X from scratch.
+- Test that it is working.
+
+### Lab 5: Navigating Obstacle Track
+- Navigate the robot alog a track with dead ends.
+- Make the robot stop and wait when it encounters an obstacle.
+- Get to the finish like as fast as possible.
