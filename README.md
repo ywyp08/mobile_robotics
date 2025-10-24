@@ -1,6 +1,6 @@
 # Mobile Robotics
 
-This repository contains a series of exercises for the **Mobile Robotics** course.
+This repository contains a series of exercises for **Mobile Robotics** course.
 
 ## Labs
 
