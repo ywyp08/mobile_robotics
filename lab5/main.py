@@ -19,7 +19,6 @@ FORWARD_SPEED = 100     # mm/s
 WAIT_TIME = 100         # ms
 TURN_BASE = 10          # degrees
 ULTRA_THRESH = 50        # mm
-GREY_CHECK = False
 
 # Functions
 def sees_black():
@@ -61,13 +60,6 @@ while run:
         wait(WAIT_TIME)
     if sees_black():
         robot.drive(FORWARD_SPEED, 0)
-    elif GREY_CHECK and sees_grey():
-        ev3.speaker.beep()
-        if grey_patch == 0:
-            robot.turn(360)
-            grey_patch += 1
-        else:
-            run = False
     else:
         robot.stop()
         wait(WAIT_TIME)
