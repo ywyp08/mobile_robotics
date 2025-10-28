@@ -33,5 +33,5 @@ while True:
     if sensor_is_on_black():
         robot.drive(FORWARD_SPEED, +TURN_RATE)
     else:
-        robot.drive(0, -TURN_RATE)
+        robot.drive(FORWARD_SPEED, -TURN_RATE)
     wait(10)
