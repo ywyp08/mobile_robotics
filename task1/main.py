@@ -25,14 +25,10 @@ def sees_green():
 
 def sees_grey():
     r, g, b = color_sensor.rgb()
-    reflection = color_sensor.reflection()
-    rgb_range = (7 <= r <= 13) and (10 <= g <= 18) and (18 <= b <= 26)
-    reflection_range = (12 <= reflection <= 26)
-    ev3.screen.clear()
-    ev3.screen.print("R:", r, "G:", g, "B:", b)
-    ev3.screen.print("Ref:", reflection)
-    wait(5000)
-    return rgb_range and reflection_range
+    # ev3.screen.clear()
+    # ev3.screen.print("R:", r, "G:", g, "B:", b)
+    rgb_range = (8 <= r <= 13) and (12 <= g <= 17) and (24 <= b <= 31)
+    return rgb_range
 
 def look_around(turn_angle):
     robot.turn(turn_angle)
@@ -58,6 +54,7 @@ while run:
             robot.turn(360)
             grey_patch += 1
         else:
+            robot.stop()
             run = False
     else:
         robot.stop()
