@@ -55,19 +55,19 @@ watch.reset()
 grey_patch = 0
 run = True
 while run:
+    # Update and log position information
     distance = robot.distance()
     delta_d = distance - last_distance
     last_distance = distance
-
     heading = robot.angle()
     rad = math.radians(heading)
     x += delta_d * math.cos(rad)
     y += delta_d * math.sin(rad)
-
     data.log(watch.time(), x, y, heading)
-
+    # Look for green
     if sees_green():
         robot.drive(FORWARD_SPEED, 0)
+    # Look for grey
     elif GREY_CHECK and sees_grey():
         ev3.speaker.beep()
         if grey_patch == 0:
@@ -75,6 +75,7 @@ while run:
             grey_patch += 1
         else:
             run = False
+    # Look around
     else:
         robot.stop()
         wait(WAIT_TIME)
@@ -82,7 +83,6 @@ while run:
         while not sees_green():
             look_around(turn_angle)
             turn_angle += TURN_BASE
-
     wait(WAIT_TIME)
 
 robot.stop()
