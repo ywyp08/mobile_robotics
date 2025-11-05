@@ -16,8 +16,8 @@ robot = DriveBase(left_motor, right_motor, wheel_diameter=55.5, axle_track=104)
 
 # Settings
 FORWARD_SPEED = 10     # mm/s
-TURN_RATE = 30          # deg/s for correcting turns
-ULTRA_THRESH = 50        # mm for obstacle
+TURN_RATE = 30         # deg/s for correcting turns
+ULTRA_THRESH = 50      # mm for obstacle
 
 # Functions
 def sensor_is_on_black():
@@ -25,11 +25,13 @@ def sensor_is_on_black():
 
 # Start
 while True:
+    # Check for an object infront of the robot
     if ultra_sensor.distance() < ULTRA_THRESH:
         robot.stop()
         ev3.speaker.beep()
         while ultra_sensor.distance() < ULTRA_THRESH:
             wait(10)
+    # Decice turn direction
     if sensor_is_on_black():
         robot.drive(FORWARD_SPEED, +TURN_RATE)
     else:

@@ -33,29 +33,29 @@ def sensor_is_on_black():
 
 # Start
 while True:
-    end = 0
-    distance = robot.distance()
-    delta_d = distance - last_distance
-    last_distance = distance
-
-    heading = robot.angle()
-    rad = math.radians(heading)
-    x += delta_d * math.cos(rad)
-    y += delta_d * math.sin(rad)
-
+    # Check for an object infront of the robot
     if ultra_sensor.distance() < ULTRA_THRESH:
         robot.stop()
         ev3.speaker.beep()
         while ultra_sensor.distance() < ULTRA_THRESH:
             wait(10)
+    # Decide turn direction
     if sensor_is_on_black():
         speed = FORWARD_SPEED
         turn = +TURN_RATE
     else:
         speed = FORWARD_SPEED
         turn = -TURN_RATE
-
     robot.drive(speed, turn)
-
+    # Update and log position information
+    end = 0
+    distance = robot.distance()
+    delta_d = distance - last_distance
+    last_distance = distance
+    heading = robot.angle()
+    rad = math.radians(heading)
+    x += delta_d * math.cos(rad)
+    y += delta_d * math.sin(rad)
     data.log(watch.time(), x, y, heading, speed, turn, end)
+    
     wait(10)
