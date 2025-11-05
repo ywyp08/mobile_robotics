@@ -25,8 +25,6 @@ def sees_green():
 
 def sees_grey():
     r, g, b = color_sensor.rgb()
-    # ev3.screen.clear()
-    # ev3.screen.print("R:", r, "G:", g, "B:", b)
     rgb_range = (8 <= r <= 13) and (12 <= g <= 17) and (24 <= b <= 31)
     return rgb_range
 
@@ -46,8 +44,10 @@ def look_around(turn_angle):
 grey_patch = 0
 run = True
 while run:
+    # Check for green color
     if sees_green():
         robot.drive(FORWARD_SPEED, 0)
+    # Check for grey color
     elif GREY_CHECK and sees_grey():
         ev3.speaker.beep()
         if grey_patch == 0:
@@ -56,6 +56,7 @@ while run:
         else:
             robot.stop()
             run = False
+    # Look around
     else:
         robot.stop()
         wait(WAIT_TIME)
