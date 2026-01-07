@@ -13,8 +13,8 @@ if sys.version_info.major == 2:
     print('Please run this program with python3!')
     sys.exit(0)
 
-# Calibration
-TARGET_PICK_Z = -2.5
+# Coordinate calibration
+TARGET_PICK_Z = -2.5 #always pick from this height
 
 OFFSET_Y = 1.0  
 OFFSET_X = 0.0  
@@ -23,8 +23,6 @@ ROBOT_X_RANGE = (-16, 16)
 ROBOT_Y_RANGE = (12, 28)
 
 # Colors
-Coordinates_data = yaml_handle.get_yaml_data(yaml_handle.PickingCoordinates_file_path)
-
 range_rgb = {
     'red':   (0, 0, 255),
     'blue':  (255, 0, 0),
@@ -33,7 +31,25 @@ range_rgb = {
     'white': (255, 255, 255),
 }
 
+# State variables
+servo1 = 1500
+_stop = False
+color_list = []
+__isRunning = False
+detect_color = 'None'
+start_pick_up = False
+
+tower_step = 0  
+tower_order = ['green', 'red', 'blue'] 
+
+goal_x = -999 
+goal_y = -999
+last_seen_time = 0 
+
+Coordinates_data = yaml_handle.get_yaml_data(yaml_handle.PickingCoordinates_file_path)
+
 # Functions
+#blue detection modification
 lab_data = None
 def load_config():
     global lab_data
@@ -63,12 +79,11 @@ def getAreaMaxContour(contours) :
                     area_max_contour = c
         return area_max_contour, contour_area_max 
 
-servo1 = 1500
-
 def initMove():
     board.pwm_servo_set_position(0.3, [[1, servo1]])
     AK.setPitchRangeMoving((0, 8, 10), 0,-90, 90,1500)
 
+#led hat colors
 def set_rgb(color):
     if color == "red":
         board.set_rgb([[1, 255, 0, 0], [2, 255, 0, 0]])
@@ -78,19 +93,6 @@ def set_rgb(color):
         board.set_rgb([[1, 0, 0, 255], [2, 0, 0, 255]])
     else:
         board.set_rgb([[1, 0, 0, 0], [2, 0, 0, 0]])
-
-_stop = False
-color_list = []
-__isRunning = False
-detect_color = 'None'
-start_pick_up = False
-
-tower_step = 0  
-tower_order = ['green', 'red', 'blue'] 
-
-goal_x = -999 
-goal_y = -999
-last_seen_time = 0 
 
 def reset():
     global _stop, color_list, detect_color, start_pick_up, __target_color, tower_step
@@ -216,32 +218,6 @@ def move():
                     print(f"Next Target: {next_color}")
                     __target_color = (next_color,)
                     last_seen_time = time.time()
-            
-            # search logic
-            else:
-                elapsed = time.time() - last_seen_time
-                if elapsed > 3.0:
-                    if int(elapsed * 10) % 10 == 0:
-                        print(f"Searching... Time: {elapsed:.1f}s")
-                    
-                    if search_state == 0:
-                        print("SEARCH ACTION: Lift Head")
-                        AK.setPitchRangeMoving((0, 15, 25), -90, -90, 0, 1500)
-                        search_state = 1
-                        time.sleep(1.5)
-                    elif search_state == 1:
-                        print("SEARCH ACTION: Scan Left")
-                        AK.setPitchRangeMoving((-18, 15, 25), -90, -90, 0, 1500)
-                        search_state = 2
-                        time.sleep(1.5)
-                    elif search_state == 2:
-                        print("SEARCH ACTION: Scan Right")
-                        AK.setPitchRangeMoving((18, 15, 25), -90, -90, 0, 1500)
-                        search_state = 1
-                        time.sleep(1.5)
-                else:
-                    search_state = 0
-                    time.sleep(0.01)
 
         else:
             time.sleep(0.01)
