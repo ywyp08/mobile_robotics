@@ -13,22 +13,16 @@ if sys.version_info.major == 2:
     print('Please run this program with python3!')
     sys.exit(0)
 
-# ================= CALIBRATION SETTINGS =================
-# 1. Pickup Height (cm): 
-#    Try -2.5. If robot can't reach, it auto-adjusts higher.
+# Calibration
 TARGET_PICK_Z = -2.5
 
-# 2. Forward/Back (cm): 
 OFFSET_Y = 1.0  
-
-# 3. Left/Right (cm): 
 OFFSET_X = 0.0  
 
-# 4. Workspace Mapping
 ROBOT_X_RANGE = (-16, 16) 
 ROBOT_Y_RANGE = (12, 28)
-# ========================================================
 
+# Colors
 Coordinates_data = yaml_handle.get_yaml_data(yaml_handle.PickingCoordinates_file_path)
 
 range_rgb = {
@@ -39,13 +33,12 @@ range_rgb = {
     'white': (255, 255, 255),
 }
 
+# Functions
 lab_data = None
 def load_config():
     global lab_data
     lab_data = yaml_handle.get_yaml_data(yaml_handle.lab_file_path)
-    
-    # --- SKY BLUE OVERRIDE ---
-    # Forces detection of light blue
+
     lab_data['blue'] = {
         'min': [30, 40, 0],
         'max': [255, 127, 120] 
@@ -141,35 +134,28 @@ def move():
     tower_y = 15
     block_height = 3.0
     
-    # Search state: 0=Idle, 1=Lift, 2=Scan Left, 3=Scan Right
     search_state = 0
     
     while True:
         if __isRunning:
             
-            # --- PICK UP LOGIC ---
-            # Condition: Correct Color AND Pick flag set AND Valid Coords
             if detect_color == tower_order[tower_step] and start_pick_up and goal_x != -999 and goal_y > 5:
                 
-                # Reset Search
                 search_state = 0
-                last_seen_time = time.time() # Reset timer
+                last_seen_time = time.time()
                 
                 set_rgb(detect_color)
                 board.set_buzzer(1900, 0.1, 0.9, 1)
                 
-                # PHASE 1: Hover High
                 print(f"Phase 1: Hovering {goal_x}, {goal_y}")
                 board.pwm_servo_set_position(0.5, [[1, 2000]]) 
                 AK.setPitchRangeMoving((goal_x + OFFSET_X, goal_y + OFFSET_Y, 12), -90, -90, 0, 1000)
                 time.sleep(1.5) 
                 
-                # PHASE 2: Re-Calculate & Grab
                 final_x = goal_x + OFFSET_X
                 final_y = goal_y + OFFSET_Y
                 print(f"Phase 2: Corrected to {final_x}, {final_y}")
 
-                # Ground Hugger Loop
                 grab_success = False
                 for z_try in np.arange(TARGET_PICK_Z, 1.0, 0.5):
                     result = AK.setPitchRangeMoving((final_x, final_y, z_try), -90, -90, 0, 1000)
@@ -187,35 +173,29 @@ def move():
                     continue
 
                 time.sleep(0.8) 
-                board.pwm_servo_set_position(0.5, [[1, 1500]]) # Close
+                board.pwm_servo_set_position(0.5, [[1, 1500]])
                 time.sleep(0.5)
-                AK.setPitchRangeMoving((0, 6, 20), 0,-90, 90, 1500) # Lift
+                AK.setPitchRangeMoving((0, 6, 20), 0,-90, 90, 1500)
                 time.sleep(1.5)
                 
-                # PHASE 3: GENTLE STACKING
                 print("Phase 3: Gentle Stacking")
                 board.pwm_servo_set_position(0.5, [[6, 1900]]) 
                 time.sleep(0.5)
 
                 current_z = tower_step * block_height
                 
-                # 3a. Hover 3cm ABOVE (Slowly)
                 AK.setPitchRangeMoving((tower_x, tower_y, current_z + 3), -90, -90, 0, 1500)
                 time.sleep(1.5)
                 
-                # 3b. Touch Down (Super Slow - 2.0s)
                 AK.setPitchRangeMoving((tower_x, tower_y, current_z), -90, -90, 0, 2000) 
                 time.sleep(2.0)
                 
-                # 3c. Open Claw
                 board.pwm_servo_set_position(0.5, [[1, 1800]]) 
                 time.sleep(0.5)
-                
-                # 3d. Lift Away Slow
+
                 AK.setPitchRangeMoving((tower_x, tower_y, current_z + 8), -90, -90, 0, 2000) 
                 time.sleep(1.5)
                 
-                # Reset
                 board.pwm_servo_set_position(1.2, [[1, 1500],[3, 515],[4, 2170],[5, 945]])
                 time.sleep(1.2)
                 board.pwm_servo_set_position(0.5, [[6, 1500]])
@@ -237,17 +217,15 @@ def move():
                     __target_color = (next_color,)
                     last_seen_time = time.time()
             
-            # --- SEARCH LOGIC (Runs when NOT picking up) ---
+            # search logic
             else:
                 elapsed = time.time() - last_seen_time
                 if elapsed > 3.0:
-                    # Print every 1s so we know it's working
                     if int(elapsed * 10) % 10 == 0:
                         print(f"Searching... Time: {elapsed:.1f}s")
                     
                     if search_state == 0:
                         print("SEARCH ACTION: Lift Head")
-                        # Move Z=25 (High), Y=15 (Forward)
                         AK.setPitchRangeMoving((0, 15, 25), -90, -90, 0, 1500)
                         search_state = 1
                         time.sleep(1.5)
@@ -259,10 +237,9 @@ def move():
                     elif search_state == 2:
                         print("SEARCH ACTION: Scan Right")
                         AK.setPitchRangeMoving((18, 15, 25), -90, -90, 0, 1500)
-                        search_state = 1 # Loop back to Left
+                        search_state = 1
                         time.sleep(1.5)
                 else:
-                    # Reset search state if we saw something recently
                     search_state = 0
                     time.sleep(0.01)
 
@@ -323,8 +300,6 @@ def run(img):
             goal_x = round(raw_x, 2)
             goal_y = round(raw_y, 2)
             
-            # --- TIMER RESET ---
-            # IMPORTANT: We only reset the search timer if we see the CORRECT color
             if color_area_max == tower_order[tower_step]:
                 last_seen_time = time.time()
 
@@ -363,13 +338,13 @@ def run(img):
         
         cv2.putText(img, f"Step: {tower_order[tower_step]}", (10, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,255,255), 1)
         
-        # Debug Timer on Screen
         elapsed = time.time() - last_seen_time
         if elapsed > 1.0:
             cv2.putText(img, f"Wait: {elapsed:.1f}s", (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0,0,255), 1)
 
         return img
 
+# Main
 if __name__ == '__main__':
     from kinematics.arm_move_ik import *
     from common.ros_robot_controller_sdk import Board
